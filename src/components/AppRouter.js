@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import {
   BrowserRouter as Router,
   Switch,
   Route
 } from 'react-router-dom';
-
-import PostsPage from './pages/Posts';
-import CommentsPage from './pages/Comments';
 import { getAllPosts } from '../util/api';
 import { useGlobalContext } from '../context/globalState';
 import { INIT_POSTS } from '../context/actions';
+import LoadingSpinner from "./shared/LoadingSpinner";
 
+const PostsPage = lazy(() => import('./pages/Posts'));
+const CommentsPage = lazy(() => import('./pages/Comments'));
 
 function AppRouter (props) {
   const { dispatch, setErrorMessage } = useGlobalContext();
@@ -30,12 +30,14 @@ function AppRouter (props) {
 
   return (
     <Router>
-      <Switch>
-        <Route path="/comments/:id" component={CommentsPage} />
-        <Route path="/">
-          <PostsPage loading={loading}/>
-        </Route>
-      </Switch>
+      <Suspense fallback={<LoadingSpinner/>}>
+        <Switch>
+          <Route path="/comments/:id" component={CommentsPage} />
+          <Route path="/">
+            <PostsPage loading={loading}/>
+          </Route>
+        </Switch>
+      </Suspense>
     </Router>
   );
 }
